@@ -8,6 +8,14 @@
         <latest>now</latest>
       </default>
     </input>
+    <input type="text" token="ucp_interlock_extension">
+      <label>Interlock Extension Name</label>
+      <initialValue>ucp-interlock-extension</initialValue>
+    </input>
+    <input type="text" token="ucp_interlock_proxy" searchWhenChanged="true">
+      <label>Interlock Proxy Name</label>
+      <initialValue>ucp-interlock-proxy</initialValue>
+    </input>
   </fieldset>
   <row>
     <panel>
@@ -40,7 +48,11 @@
       <chart>
         <title>Container Actions</title>
         <search>
-          <query>index=main Type=container NOT Action=exec_* $container_action$ Actor.Attributes.name="$container_name$" | fillnull value="n/a" Actor.Attributes.com.docker.swarm.service.name | search Actor.Attributes.com.docker.swarm.service.name="$service_name$" | timechart count by Action</query>
+          <query>index=main Type=container NOT Action=exec_* $container_action$ Actor.Attributes.name="$container_name$" NOT Actor.Attributes.name="$ucp_interlock_extension$*" NOT Actor.Attributes.name="$ucp_interlock_proxy$*" | fillnull value="n/a" Actor.Attributes.com.docker.swarm.service.name | search Actor.Attributes.com.docker.swarm.service.name="$service_name$" | timechart count by Action
+
+| append [
+search index=main Type=service Action=update (Actor.Attributes.name="$ucp_interlock_extension$" OR Actor.Attributes.name="$ucp_interlock_proxy$") | timechart count by Actor.Attributes.name | rename $ucp_interlock_proxy$ as proxy $ucp_interlock_extension$ as extension
+]</query>
           <earliest>$timerange.earliest$</earliest>
           <latest>$timerange.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -49,19 +61,20 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
         <option name="charting.axisY.abbreviation">none</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.enabled">1</option>
         <option name="charting.axisY2.scale">inherit</option>
         <option name="charting.chart">column</option>
         <option name="charting.chart.bubbleMaximumSize">50</option>
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">proxy,extension</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
@@ -81,7 +94,11 @@
       <chart>
         <title>Container Names</title>
         <search>
-          <query>index=main Type=container (NOT Action=exec_*) $container_action$ Actor.Attributes.name="$container_name$" | fillnull value="n/a" Actor.Attributes.com.docker.swarm.service.name | search Actor.Attributes.com.docker.swarm.service.name="$service_name$" | timechart count by Actor.Attributes.name</query>
+          <query>index=main Type=container (NOT Action=exec_*) $container_action$ Actor.Attributes.name="$container_name$" NOT Actor.Attributes.name="$ucp_interlock_extension$*" NOT Actor.Attributes.name="$ucp_interlock_proxy$*" | fillnull value="n/a" Actor.Attributes.com.docker.swarm.service.name | search Actor.Attributes.com.docker.swarm.service.name="$service_name$" | timechart count by Actor.Attributes.name
+
+| append [
+search index=main Type=service Action=update (Actor.Attributes.name="$ucp_interlock_extension$" OR Actor.Attributes.name="$ucp_interlock_proxy$") | timechart count by Actor.Attributes.name | rename $ucp_interlock_proxy$ as proxy $ucp_interlock_extension$ as extension
+]</query>
           <earliest>$timerange.earliest$</earliest>
           <latest>$timerange.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -90,19 +107,20 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
         <option name="charting.axisY.abbreviation">none</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.enabled">1</option>
         <option name="charting.axisY2.scale">inherit</option>
         <option name="charting.chart">column</option>
         <option name="charting.chart.bubbleMaximumSize">50</option>
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">extension,proxy</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
@@ -122,7 +140,11 @@
       <chart>
         <title>Service Names</title>
         <search>
-          <query>index=main Type=container (NOT Action=exec_*) $container_action$ Actor.Attributes.name="$container_name$" | fillnull value="n/a" Actor.Attributes.com.docker.swarm.service.name | search Actor.Attributes.com.docker.swarm.service.name="$service_name$" | timechart count by Actor.Attributes.com.docker.swarm.service.name</query>
+          <query>index=main Type=container (NOT Action=exec_*) $container_action$ Actor.Attributes.name="$container_name$" NOT Actor.Attributes.name="$ucp_interlock_extension$*" NOT Actor.Attributes.name="$ucp_interlock_proxy$*" | fillnull value="n/a" Actor.Attributes.com.docker.swarm.service.name | search Actor.Attributes.com.docker.swarm.service.name="$service_name$" | timechart count by Actor.Attributes.com.docker.swarm.service.name
+
+| append [
+search index=main Type=service Action=update (Actor.Attributes.name="$ucp_interlock_extension$" OR Actor.Attributes.name="$ucp_interlock_proxy$") | timechart count by Actor.Attributes.name | rename $ucp_interlock_proxy$ as proxy $ucp_interlock_extension$ as extension
+]</query>
           <earliest>$timerange.earliest$</earliest>
           <latest>$timerange.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -131,19 +153,20 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
         <option name="charting.axisY.abbreviation">none</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.enabled">1</option>
         <option name="charting.axisY2.scale">inherit</option>
         <option name="charting.chart">column</option>
         <option name="charting.chart.bubbleMaximumSize">50</option>
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">proxy,extension</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
@@ -189,7 +212,11 @@
       <chart>
         <title>Network Actions</title>
         <search>
-          <query>index=main Type=network $network_action$ Actor.Attributes.name="$network_name$" | timechart count by Action</query>
+          <query>index=main Type=network $network_action$ Actor.Attributes.name="$network_name$" | timechart count by Action
+
+| append [
+search index=main Type=service Action=update (Actor.Attributes.name="$ucp_interlock_extension$" OR Actor.Attributes.name="$ucp_interlock_proxy$") | timechart count by Actor.Attributes.name | rename $ucp_interlock_proxy$ as proxy $ucp_interlock_extension$ as extension
+]</query>
           <earliest>$timerange.earliest$</earliest>
           <latest>$timerange.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -198,19 +225,20 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
         <option name="charting.axisY.abbreviation">none</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.enabled">1</option>
         <option name="charting.axisY2.scale">inherit</option>
         <option name="charting.chart">column</option>
         <option name="charting.chart.bubbleMaximumSize">50</option>
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">extension,proxy</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
@@ -230,7 +258,11 @@
       <chart>
         <title>Network Names</title>
         <search>
-          <query>index=main Type=network $network_action$ Actor.Attributes.name="$network_name$" | timechart count by Actor.Attributes.name</query>
+          <query>index=main Type=network $network_action$ Actor.Attributes.name="$network_name$" | timechart count by Actor.Attributes.name
+
+| append [
+search index=main Type=service Action=update (Actor.Attributes.name="$ucp_interlock_extension$" OR Actor.Attributes.name="$ucp_interlock_proxy$") | timechart count by Actor.Attributes.name | rename $ucp_interlock_proxy$ as proxy $ucp_interlock_extension$ as extension
+]</query>
           <earliest>$timerange.earliest$</earliest>
           <latest>$timerange.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -239,19 +271,20 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
         <option name="charting.axisY.abbreviation">none</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.enabled">1</option>
         <option name="charting.axisY2.scale">inherit</option>
         <option name="charting.chart">column</option>
         <option name="charting.chart.bubbleMaximumSize">50</option>
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">proxy,extension</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
@@ -297,7 +330,11 @@
       <chart>
         <title>Service Actions</title>
         <search>
-          <query>index=main Type=service $service_action$ Actor.Attributes.name="$service_name$" | timechart count by Action</query>
+          <query>index=main Type=service $service_action$ Actor.Attributes.name="$service_name$" NOT Actor.Attributes.name="$ucp_interlock_extension$*" NOT Actor.Attributes.name="$ucp_interlock_proxy$*" | timechart count by Action
+
+| append [
+search index=main Type=service Action=update (Actor.Attributes.name="$ucp_interlock_extension$" OR Actor.Attributes.name="$ucp_interlock_proxy$") | timechart count by Actor.Attributes.name | rename $ucp_interlock_proxy$ as proxy $ucp_interlock_extension$ as extension
+]</query>
           <earliest>$timerange.earliest$</earliest>
           <latest>$timerange.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -306,19 +343,20 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
         <option name="charting.axisY.abbreviation">none</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.enabled">1</option>
         <option name="charting.axisY2.scale">inherit</option>
         <option name="charting.chart">column</option>
         <option name="charting.chart.bubbleMaximumSize">50</option>
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">proxy,extension</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
@@ -338,7 +376,11 @@
       <chart>
         <title>Service Names</title>
         <search>
-          <query>index=main Type=service $service_action$ Actor.Attributes.name="$service_name$" | timechart count by Actor.Attributes.name</query>
+          <query>index=main Type=service $service_action$ Actor.Attributes.name="$service_name$" NOT Actor.Attributes.name="$ucp_interlock_extension$*" NOT Actor.Attributes.name="$ucp_interlock_proxy$*" | timechart count by Actor.Attributes.name
+
+| append [
+search index=main Type=service Action=update (Actor.Attributes.name="$ucp_interlock_extension$" OR Actor.Attributes.name="$ucp_interlock_proxy$") | timechart count by Actor.Attributes.name | rename $ucp_interlock_proxy$ as proxy $ucp_interlock_extension$ as extension
+]</query>
           <earliest>$timerange.earliest$</earliest>
           <latest>$timerange.latest$</latest>
           <sampleRatio>1</sampleRatio>
@@ -347,19 +389,20 @@
         <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
         <option name="charting.axisTitleX.visibility">collapsed</option>
         <option name="charting.axisTitleY.visibility">collapsed</option>
-        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">collapsed</option>
         <option name="charting.axisX.abbreviation">none</option>
         <option name="charting.axisX.scale">linear</option>
         <option name="charting.axisY.abbreviation">none</option>
         <option name="charting.axisY.scale">linear</option>
         <option name="charting.axisY2.abbreviation">none</option>
-        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.enabled">1</option>
         <option name="charting.axisY2.scale">inherit</option>
         <option name="charting.chart">column</option>
         <option name="charting.chart.bubbleMaximumSize">50</option>
         <option name="charting.chart.bubbleMinimumSize">10</option>
         <option name="charting.chart.bubbleSizeBy">area</option>
         <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">extension,proxy</option>
         <option name="charting.chart.showDataLabels">none</option>
         <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
         <option name="charting.chart.stackMode">stacked</option>
