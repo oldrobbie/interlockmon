@@ -23,9 +23,9 @@ jobs:
           name: Build and Push
           command: |
             TAG=latest
-            docker build -t oldrob/interlogmon-agent:$TAG -f agent.Dockerfile .
+            docker build -t oldrob/interlockmon-agent:$TAG -f agent.Dockerfile .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push oldrob/interlogmon-agent:$TAG
-            docker build -t oldrob/interlogmon-splunk:$TAG -f splunk.Dockerfile .
+            docker push oldrob/interlockmon-agent:$TAG
+            docker build -t oldrob/interlockmon-splunk:$TAG -f splunk.Dockerfile .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push oldrob/interlogmon-splunk:$TAG            
+            docker push oldrob/interlockmon-splunk:$TAG            
