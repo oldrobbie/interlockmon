@@ -1,10 +1,8 @@
 version: "3.7"
 
 services:
-  interlockmon:
-    build:
-      context: .
-      dockerfile: agent.Dockerfile
+  agent:
+    image: oldrob/interlockmon-agent
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
@@ -12,11 +10,13 @@ services:
       SPLUNK_API_URL: https://splunk:8089
       SPLUNK_PASSWORD: Mfjk34fd89fg.uh3!43d
   splunk:
-    build:
-      context: .
-      dockerfile: splunk.Dockerfile
+    image: oldrob/interlockmon-splunk
     ports:
       - "8000:8000"
+    #deploy:
+    #  placement:
+    #    constraints:
+    #      - node.hostname == linuxkit-00155d2ab91d
     environment:
       SPLUNK_START_ARGS: --accept-license
       SPLUNK_PASSWORD: Mfjk34fd89fg.uh3!43d
