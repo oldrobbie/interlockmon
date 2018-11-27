@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+  interlockmon:
+    build:
+      context: .
+      dockerfile: agent.Dockerfile
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      SPLUNK_HEC_URL: https://splunk:8088
+      SPLUNK_API_URL: https://splunk:8089
+      SPLUNK_PASSWORD: Mfjk34fd89fg.uh3!43d
+  splunk:
+    build:
+      context: .
+      dockerfile: splunk.Dockerfile
+    ports:
+      - "8000:8000"
+    #deploy:
+    #  placement:
+    #    constraints:
+    #      - node.hostname == linuxkit-00155d2ab91d
+    environment:
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_PASSWORD: Mfjk34fd89fg.uh3!43d
