@@ -9,6 +9,8 @@ services:
       SPLUNK_HEC_URL: https://splunk:8088
       SPLUNK_API_URL: https://splunk:8089
       SPLUNK_PASSWORD: Mfjk34fd89fg.uh3!43d
+    deploy:
+      mode: global
   splunk:
     image: oldrob/interlockmon-splunk
     ports:
